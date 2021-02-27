@@ -8,7 +8,7 @@ import java.util.List;
 
 public class TextFile extends DataFile {
 
-    protected LinkedList<String> lines = new LinkedList<>();
+    protected LinkedList<String> lines;
 
     public TextFile(String path, String fileName) {
         super(path, fileName, Extension.TXT);
@@ -24,15 +24,10 @@ public class TextFile extends DataFile {
             String line = reader.readLine();
             while(line != null) {
                 lines.add(line);
-                System.out.println("Read: " + line);
                 line = reader.readLine();
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        for(String line : getLines()) {
-            System.out.println("Cached: " + line);
         }
     }
 
@@ -54,6 +49,10 @@ public class TextFile extends DataFile {
 
     public void addString(String string) {
         this.lines.add(string);
+    }
+
+    public void addLine(String string) {
+        this.addString(string);
     }
 
     public void setLines(List<String> stringList) {

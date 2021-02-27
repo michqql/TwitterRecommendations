@@ -10,21 +10,24 @@ public class KeyValueTextFile extends TextFile {
     public KeyValueTextFile(String path, String fileName, String splitter) {
         super(path, fileName);
 
-        for(String line : getLines()) {
-            System.out.println("Cached2: " + line);
-        }
-
         this.splitterRegex = splitter;
         parse();
     }
 
     public void parse() {
+        this.values.clear();
+
         for(String line : getLines()) {
             String[] keyValue = line.split(splitterRegex, 2);
-            if(keyValue.length == 2) {
+            if(keyValue.length >= 2) {
                 values.put(keyValue[0], keyValue[1]);
             }
         }
+    }
+
+    public void put(String key, String value) {
+        this.addLine(key + splitterRegex + value);
+        this.values.put(key, value);
     }
 
     private String getRawData(String key) {
@@ -43,7 +46,11 @@ public class KeyValueTextFile extends TextFile {
         return Double.parseDouble(getRawData(key));
     }
 
-    public int getInt(String key) {
-        return Integer.parseInt(getRawData(key));
+    public long getLong(String key) {
+        return Long.parseLong(getRawData(key));
+    }
+
+    public boolean isEmpty() {
+        return values.isEmpty();
     }
 }

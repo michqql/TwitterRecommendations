@@ -1,14 +1,13 @@
 package me.mpearso.twitter;
 
+import me.mpearso.twitter.account.LoginHandler;
 import me.mpearso.twitter.component.Tweet;
-import me.mpearso.twitter.data.text.KeyValueTextFile;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 import twitter4j.conf.ConfigurationBuilder;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -45,7 +44,27 @@ public class TwitterRecommendations {
     private User selfUser;
 
     public TwitterRecommendations() {
-        loginAdvanced();
+        loginModularised();
+    }
+
+    private void loginModularised() {
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.setDebugEnabled(true)
+                .setOAuthConsumerKey(API_KEY)
+                .setOAuthConsumerSecret(API_SECRET);
+
+        TwitterFactory tf = new TwitterFactory(cb.build());
+        Twitter twitter = tf.getInstance();
+
+        final LoginHandler loginHandler = new LoginHandler(twitter);
+        loginHandler.onAuthentication(() -> twitter.setOAuthAccessToken(loginHandler.getAccessToken()));
+
+        try {
+            for (Status status : twitter.getHomeTimeline()) {
+                System.out.println("---------------------------------------------------------");
+                new Tweet(status).print();
+            }
+        } catch(TwitterException ignore) {}
     }
 
     private void loginAdvanced() {
@@ -80,6 +99,7 @@ public class TwitterRecommendations {
                     } else {
                         accessToken = twitter.getOAuthAccessToken(requestToken);
                     }
+                    twitter.setOAuthAccessToken(accessToken);
                 }
 
                 System.out.println("-----------");
@@ -139,7 +159,6 @@ public class TwitterRecommendations {
             new Tweet(statuses.get(0)).toFile();
         } catch (TwitterException e) {
             e.printStackTrace();
-            return;
         }
     }
 }

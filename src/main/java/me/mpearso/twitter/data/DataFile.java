@@ -43,7 +43,6 @@ public abstract class DataFile {
                 file.createNewFile();
             } catch(IOException e) {
                 e.printStackTrace();
-
             }
         }
     }
