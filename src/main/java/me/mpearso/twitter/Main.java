@@ -8,8 +8,7 @@ public class Main {
 //        new TwitterRecommendations();
         long now = System.currentTimeMillis();
         new KeywordExtraction()
-                .extract("This sentence contains some important words and nuclear key codes that I would hate if someone, such as the Russians got access to.")
-                .extract("Important words must be counter as part of this algorithm.")
+                .extract("Mic Mic Mic Mic Chig Chig Chig Petr Mic Petr Chig Mic Mic Chig")
                 .print();
         System.out.println((System.currentTimeMillis() - now) + "ms");
     }

@@ -13,7 +13,7 @@ public class KeywordExtraction {
     // Splits a text by whitespaces
     private final static Pattern splitter = Pattern.compile("( )+");
 
-    private ValuesTextFile stopwords = new ValuesTextFile("files", "stopwords", ",");
+    private final ValuesTextFile stopwords = new ValuesTextFile("files", "stopwords", ",");
 
     // A hashmap with all key terms and the times they appear across multiple texts
     private final LinkedHashMap<String, Integer> termCountMap = new LinkedHashMap<>();
@@ -25,7 +25,7 @@ public class KeywordExtraction {
 
     /**
      * Extracts the most frequent terms in a text
-     * Ignores english stopwords
+     * Ignores english stopwords as defined by the stopwords object
      * @param text - the text to extract keywords from
      */
     public KeywordExtraction extract(String text) {
@@ -79,9 +79,52 @@ public class KeywordExtraction {
         return this;
     }
 
+    /**
+     * Returns a hashmap with each unique key term and the frequency (as a float 0-1)
+     * of how often it appears within the texts
+     * @return hashmap(term, frequency)
+     */
+    public HashMap<String, Float> getTermFrequencies() {
+        final HashMap<String, Float> terms = new HashMap<>();
+
+        // Loop through all entries in the global term counter map
+        // and convert this count to a frequency float by dividing by the
+        // global term counter and storing this in the local map
+        this.termCountMap.forEach((term, count) -> terms.put(term, (float) count / this.termCounter));
+        return terms;
+
+    }
+
+    /**
+     * Returns a linked hashmap with each unique key term and the frequency (as a float 0-1)
+     * of how often it appears within the texts
+     *
+     * Hashmap is ordered depending on frequency (more weighting for higher frequency, high to low)
+     * @return linked hashmap(term, frequency)
+     */
+    public LinkedHashMap<String, Float> getOrderedTermFrequencies() {
+        final LinkedHashMap<String, Float> terms = new LinkedHashMap<>();
+
+        // Compare all entries in the global term counter map
+        // to sort them by their count, then loop through this
+        // new order and convert the count to a frequency float
+        // by dividing by the global term counter and storing this
+        // in the local map
+        this.termCountMap.entrySet().stream()
+                .sorted((term1, term2) -> term2.getValue() - term1.getValue()) // Sort the terms by weight (high to low)
+                .forEach(entry -> terms.put(entry.getKey(), (float) entry.getValue() / this.termCounter)); // Collect this to a map
+
+        return terms;
+    }
+
+
+    /**
+     * Generic function to print term and frequency to the console (or default output stream)
+     * Prints in order (high to low)
+     */
     public void print() {
-        for(Map.Entry<String, Integer> entry : this.termCountMap.entrySet()) {
-            System.out.println(entry.getKey() + ": " + (float) entry.getValue() / this.termCounter);
+        for(Map.Entry<String, Float> entry : getOrderedTermFrequencies().entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
         }
     }
 }

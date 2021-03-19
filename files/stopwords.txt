@@ -1,5 +1,5 @@
 i,me,my,myself,we,our,ours,ourselves,you,your,yours,yourself,yourselves,he,him,his,himself,she,her,hers,herself,it,its,itself
-got,would,sentence,contains,words,key,hate
+got,would,sentence,contains,words,key,hate,cant,come,asked,new,next,instead,getting,way
 they
 them
 their
