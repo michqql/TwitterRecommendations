@@ -57,7 +57,6 @@ public class TwitterRecommendations {
         Twitter twitter = tf.getInstance();
 
         final LoginHandler loginHandler = new LoginHandler(twitter);
-        loginHandler.onAuthentication(() -> twitter.setOAuthAccessToken(loginHandler.getAccessToken()));
 
         try {
             for (Status status : twitter.getHomeTimeline()) {

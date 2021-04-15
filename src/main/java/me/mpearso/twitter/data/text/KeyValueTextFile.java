@@ -5,18 +5,17 @@ import java.util.HashMap;
 public class KeyValueTextFile extends TextFile {
 
     private final String splitterRegex;
-    protected final HashMap<String, String> values = new HashMap<>();
+    protected final HashMap<String, String> values;
 
     public KeyValueTextFile(String path, String fileName, String splitter) {
         super(path, fileName);
 
         this.splitterRegex = splitter;
+        this.values = new HashMap<>();
         parse();
     }
 
     public void parse() {
-        this.values.clear();
-
         for(String line : getLines()) {
             String[] keyValue = line.split(splitterRegex, 2);
             if(keyValue.length >= 2) {
@@ -48,6 +47,10 @@ public class KeyValueTextFile extends TextFile {
 
     public long getLong(String key) {
         return Long.parseLong(getRawData(key));
+    }
+
+    public boolean contains(String key) {
+        return values.containsKey(key);
     }
 
     public boolean isEmpty() {
