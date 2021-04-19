@@ -2,6 +2,7 @@ package me.mpearso.twitter;
 
 import me.mpearso.twitter.account.LoginHandler;
 import me.mpearso.twitter.component.Tweet;
+import me.mpearso.twitter.gui.GUI;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
@@ -57,13 +58,14 @@ public class TwitterRecommendations {
         Twitter twitter = tf.getInstance();
 
         final LoginHandler loginHandler = new LoginHandler(twitter);
+        loginHandler.openURLInDefaultBrowser();
 
-        try {
-            for (Status status : twitter.getHomeTimeline()) {
-                System.out.println("---------------------------------------------------------");
-                new Tweet(status).print();
-            }
-        } catch(TwitterException ignore) {}
+//        try {
+//            for (Status status : twitter.getHomeTimeline()) {
+//                System.out.println("---------------------------------------------------------");
+//                new Tweet(status).print();
+//            }
+//        } catch(TwitterException ignore) {}
     }
 
     private void loginAdvanced() {

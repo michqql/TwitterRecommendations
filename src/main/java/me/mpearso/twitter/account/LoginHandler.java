@@ -45,13 +45,15 @@ public class LoginHandler {
         // Opens the token file
         this.accessTokenFile = new KeyValueTextFile("data", "tokens", ":");
 
-        // If the user has already authenticated, we don't need to get them to do it again
+        // If the user has already authenticated,
+        // we don't need to get them to do it again
         try {
             if(isAuthenticationDataSaved()) {
                 this.accessToken = new AccessToken(
                         accessTokenFile.getString(ACCESS_TOKEN_KEY),
                         accessTokenFile.getString(ACCESS_SECRET_KEY)
                 );
+                onAuthentication();
             } else {
                 this.requestToken = twitter.getOAuthRequestToken();
             }
@@ -59,6 +61,14 @@ public class LoginHandler {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    /**
+     * Checks if the user has been authenticated this session
+     * @return {@code true} if authenticated
+     */
+    public final boolean isAuthenticated() {
+        return accessToken != null;
     }
 
     /**
@@ -78,38 +88,71 @@ public class LoginHandler {
         // If the user has already authenticated,
         // we don't need to get the user to do this
         // again, and so can return
-        if(isAuthenticationDataSaved())
+        if(isAuthenticated() || isAuthenticationDataSaved())
             return;
 
         try {
-            // Attempts to open the users default browser, and set the page
-            // to the twitter authentication page
+            // Attempts to open the users default browser,
+            // and set the page to the twitter authentication page
             Desktop.getDesktop().browse(new URI(requestToken.getAuthenticationURL()));
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
     }
 
-    public final void setPin(String pin) {
-        if(!pin.isEmpty()) {
-            try {
+    /**
+     * Attempts to authenticate using the entered pin
+     * @param pin authentication pin
+     * @return {@code true} if authentication was successful
+     */
+    public final boolean setPin(String pin) {
+        try {
+
+            // Attempts to get the token for current session
+            if(pin == null || pin.isEmpty())
+                accessToken = twitter.getOAuthAccessToken(requestToken);
+            else
                 accessToken = twitter.getOAuthAccessToken(requestToken, pin);
-                accessTokenFile.put(ACCESS_TOKEN_KEY, accessToken.getToken());
-                accessTokenFile.put(ACCESS_SECRET_KEY, accessToken.getTokenSecret());
-            } catch(TwitterException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
+
+            // At this point, if no exception has been thrown
+            // we can assume that authentication has been successful
+            // and therefore can save the tokens to our file
+            accessTokenFile.put(ACCESS_TOKEN_KEY, accessToken.getToken());
+            accessTokenFile.put(ACCESS_SECRET_KEY, accessToken.getTokenSecret());
+
+            onAuthentication();
+            return true;
+        } catch (TwitterException e) {
+
+            /* TODO: Don't exit here, we want to handle this exception
+            *   and let the user know that the pin they entered was incorrect */
+            // An authentication exception has been thrown in the process
+            // This is a fatal error, quit the program.
+            e.printStackTrace();
+            System.exit(1);
+            return false;
         }
     }
 
-    public void onAuthentication(Runnable run) {
-        this.runnable = run;
-        if(!accessTokenFile.isEmpty())
-            runnable.run();
+    /**
+     * Sets the runnable that runs when authenticated successfully
+     * @param runnable to run
+     */
+    public void setAuthenticationRunnable(Runnable runnable) {
+        this.runnable = runnable;
+        onAuthentication();
     }
 
     public AccessToken getAccessToken() {
-        return null;
+        return accessToken;
+    }
+
+    // Private method that will run the authentication runnable
+    // and ensure that it can only be ran a single time
+    private void onAuthentication() {
+        if(runnable != null && isAuthenticated()) {
+            runnable.run();
+            runnable = null;
+        }
     }
 }

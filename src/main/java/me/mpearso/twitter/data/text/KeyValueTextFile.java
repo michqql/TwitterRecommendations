@@ -50,7 +50,8 @@ public class KeyValueTextFile extends TextFile {
     }
 
     public boolean contains(String key) {
-        return values.containsKey(key);
+        String value = values.get(key);
+        return value != null && !value.isEmpty();
     }
 
     public boolean isEmpty() {
