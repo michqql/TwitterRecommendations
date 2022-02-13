@@ -1,4 +1,4 @@
-package me.mpearso.twitter.data.text;
+package me.mpearso.twitter.io.text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,8 +9,8 @@ public class ValuesTextFile extends TextFile {
     private final String SPLITTER_REGEX;
     private List<String> values;
 
-    public ValuesTextFile(String path, String fileName, String splitter) {
-        super(path, fileName);
+    public ValuesTextFile(String path, String splitter) {
+        super(path);
 
         this.SPLITTER_REGEX = splitter;
         parse();

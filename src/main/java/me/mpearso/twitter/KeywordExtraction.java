@@ -1,6 +1,6 @@
 package me.mpearso.twitter;
 
-import me.mpearso.twitter.data.text.ValuesTextFile;
+import me.mpearso.twitter.io.text.ValuesTextFile;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -8,12 +8,13 @@ import java.util.regex.Pattern;
 public class KeywordExtraction {
 
     // Removes all characters that aren't a-z, A-Z or a whitespace
-    private final static Pattern style = Pattern.compile("[^a-zA-Z ]");
+    private final static Pattern characters = Pattern.compile("[^a-zA-Z ]");
 
     // Splits a text by whitespaces
     private final static Pattern splitter = Pattern.compile("( )+");
 
-    private final ValuesTextFile stopwords = new ValuesTextFile("files", "stopwords", ",");
+    // A file listing all english + chosen stopwords
+    private final ValuesTextFile stopwords = new ValuesTextFile("files/stopwords.txt", ",");
 
     // A hashmap with all key terms and the times they appear across multiple texts
     private final LinkedHashMap<String, Integer> termCountMap = new LinkedHashMap<>();
@@ -29,13 +30,12 @@ public class KeywordExtraction {
      * @param text - the text to extract keywords from
      */
     public KeywordExtraction extract(String text) {
-        int importantWordCounter = 0; // Number of terms that we care about (not counting stopwords)
         List<String> exclude = new ArrayList<>(); // Terms that have already been processed
         List<String> stopwords = this.stopwords.getValues(); // English stopwords to also exclude
 
         // The text split into an array, excluding punctuation
         // and converts whole text to lowercase
-        String[] words = text.replaceAll(style.pattern(), "").toLowerCase().split(splitter.pattern());
+        String[] words = text.replaceAll(characters.pattern(), "").toLowerCase().split(splitter.pattern());
 
         // Loop through the words in the text
         for(int i = 0; i < words.length; i++) {
@@ -57,7 +57,7 @@ public class KeywordExtraction {
                 if(i == j) continue;
 
                 // Check if the terms are equal, if so increment the counter
-                if(term.equals(words[j]))
+                if(term.equalsIgnoreCase(words[j]))
                     count++;
             }
 
@@ -68,12 +68,9 @@ public class KeywordExtraction {
             int cachedCount = termCountMap.getOrDefault(term, 0);
             this.termCountMap.put(term, cachedCount + count);
 
-            // Increment the number of important words by count
-            importantWordCounter += count;
+            // Increment the number of important words by count to our global counter
+            this.termCounter += count;
         }
-
-        // Add our local keyword counter to the global counter
-        this.termCounter += importantWordCounter;
 
         // Returns this (self) object, so that other methods can be called inline
         return this;
@@ -92,7 +89,6 @@ public class KeywordExtraction {
         // global term counter and storing this in the local map
         this.termCountMap.forEach((term, count) -> terms.put(term, (float) count / this.termCounter));
         return terms;
-
     }
 
     /**
@@ -117,9 +113,8 @@ public class KeywordExtraction {
         return terms;
     }
 
-
     /**
-     * Generic function to print term and frequency to the console (or default output stream)
+     * Function to print term and frequency to the console (or default output stream)
      * Prints in order (high to low)
      */
     public void print() {

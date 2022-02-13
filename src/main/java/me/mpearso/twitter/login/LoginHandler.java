@@ -1,27 +1,28 @@
-package me.mpearso.twitter.account;
+package me.mpearso.twitter.login;
 
-import me.mpearso.twitter.data.text.KeyValueTextFile;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import me.mpearso.twitter.io.impl.JsonFile;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 public class LoginHandler {
 
-    private final static String ACCESS_TOKEN_KEY = "access_token", ACCESS_SECRET_KEY = "access_secret";
+    private final static String ACCESS_TOKEN_KEY = "access_token";
+    private final static String ACCESS_SECRET_KEY = "access_secret";
 
     // The twitter instance
     private final Twitter twitter;
 
     // The file that stores users token key and secret for this app
-    private final KeyValueTextFile accessTokenFile;
+    private final JsonFile accessTokenFile;
 
     // Run method that is called when authentication is successful
     private Runnable runnable;
@@ -43,16 +44,24 @@ public class LoginHandler {
         this.twitter = twitter;
 
         // Opens the token file
-        this.accessTokenFile = new KeyValueTextFile("data", "tokens", ":");
+        this.accessTokenFile = new JsonFile("data/tokens.json");
 
         // If the user has already authenticated,
         // we don't need to get them to do it again
         try {
             if(isAuthenticationDataSaved()) {
+                // We can assert that the json object is in a standard format
+                // at this point, as it passed checks in isAuthenticationDataSaved
+                // and therefore do not need to validate this again here
+                JsonObject object = accessTokenFile.getAsJsonObject();
+
                 this.accessToken = new AccessToken(
-                        accessTokenFile.getString(ACCESS_TOKEN_KEY),
-                        accessTokenFile.getString(ACCESS_SECRET_KEY)
+                        object.get(ACCESS_TOKEN_KEY).getAsString(),
+                        object.get(ACCESS_SECRET_KEY).getAsString()
                 );
+
+                // Pass in the access token to the API to authenticate
+                twitter.setOAuthAccessToken(accessToken);
                 onAuthentication();
             } else {
                 this.requestToken = twitter.getOAuthRequestToken();
@@ -75,7 +84,12 @@ public class LoginHandler {
      * @return {@code true} if the user has previously authenticated, {@code false} otherwise
      */
     public final boolean isAuthenticationDataSaved() {
-        return accessTokenFile.contains(ACCESS_TOKEN_KEY) && accessTokenFile.contains(ACCESS_SECRET_KEY);
+        JsonElement element = accessTokenFile.getElement();
+        if(element == null || !element.isJsonObject())
+            return false;
+
+        JsonObject object = element.getAsJsonObject();
+        return object.has(ACCESS_TOKEN_KEY) && object.has(ACCESS_SECRET_KEY);
     }
 
     /**
@@ -90,6 +104,14 @@ public class LoginHandler {
         // again, and so can return
         if(isAuthenticated() || isAuthenticationDataSaved())
             return;
+
+        // On some computers, this may not be supported
+        // therefore we must validate that it is
+        if(!Desktop.isDesktopSupported()) {
+            // Throw an error to let the rest of the program know what
+            // has happened and handle accordingly
+            throw new UnsupportedOperationException("Desktop API not supported on this machine");
+        }
 
         try {
             // Attempts to open the users default browser,
@@ -107,7 +129,6 @@ public class LoginHandler {
      */
     public final boolean setPin(String pin) {
         try {
-
             // Attempts to get the token for current session
             if(pin == null || pin.isEmpty())
                 accessToken = twitter.getOAuthAccessToken(requestToken);
@@ -117,8 +138,21 @@ public class LoginHandler {
             // At this point, if no exception has been thrown
             // we can assume that authentication has been successful
             // and therefore can save the tokens to our file
-            accessTokenFile.put(ACCESS_TOKEN_KEY, accessToken.getToken());
-            accessTokenFile.put(ACCESS_SECRET_KEY, accessToken.getTokenSecret());
+            JsonElement element = accessTokenFile.getElement();
+            JsonObject object;
+            if(element.isJsonObject()) {
+                object = element.getAsJsonObject();
+            } else {
+                object = new JsonObject();
+                accessTokenFile.setElement(object);
+            }
+
+            // Set the appropriate data and save
+            object.addProperty("name", accessToken.getScreenName());
+            object.addProperty("uuid", accessToken.getUserId());
+            object.addProperty(ACCESS_TOKEN_KEY, accessToken.getToken());
+            object.addProperty(ACCESS_SECRET_KEY, accessToken.getTokenSecret());
+            accessTokenFile.save();
 
             onAuthentication();
             return true;
@@ -148,7 +182,7 @@ public class LoginHandler {
     }
 
     // Private method that will run the authentication runnable
-    // and ensure that it can only be ran a single time
+    // and ensure that it can only be run a single time
     private void onAuthentication() {
         if(runnable != null && isAuthenticated()) {
             runnable.run();

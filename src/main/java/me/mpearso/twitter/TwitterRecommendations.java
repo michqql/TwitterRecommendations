@@ -1,8 +1,7 @@
 package me.mpearso.twitter;
 
-import me.mpearso.twitter.account.LoginHandler;
+import me.mpearso.twitter.login.LoginHandler;
 import me.mpearso.twitter.component.Tweet;
-import me.mpearso.twitter.gui.GUI;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
@@ -21,24 +20,9 @@ public class TwitterRecommendations {
             ACCESS_SECRET = "Df072m6zOCPWjJrdbQvCCkdYx9NvDmWo4HDYfpGAXKNl4";
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public static void main(String[] args) {
+        new TwitterRecommendations();
+    }
 
     private Twitter twitter;
     private String twitterHandle;
@@ -60,15 +44,29 @@ public class TwitterRecommendations {
         final LoginHandler loginHandler = new LoginHandler(twitter);
         loginHandler.openURLInDefaultBrowser();
 
-//        try {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        while(!loginHandler.isAuthenticated()) {
+            System.out.println("Enter the pin: ");
+
+            String pin = null;
+            try {
+                pin = br.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            loginHandler.setPin(pin);
+        }
+    }
+
+    private void loginAdvanced() {
+        //        try {
 //            for (Status status : twitter.getHomeTimeline()) {
 //                System.out.println("---------------------------------------------------------");
 //                new Tweet(status).print();
 //            }
 //        } catch(TwitterException ignore) {}
-    }
 
-    private void loginAdvanced() {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
                 .setOAuthConsumerKey(API_KEY)

@@ -1,11 +1,9 @@
 package me.mpearso.twitter;
 
-import me.mpearso.twitter.gui.TRMainWindow;
-
 public class Main {
 
-    public static void main(String[] args) {
-        new TRMainWindow();
+//    public static void main(String[] args) {
+//        new TRMainWindow();
 //        new TwitterRecommendations();
 //        long now = System.currentTimeMillis();
 //        new KeywordExtraction()
@@ -39,5 +37,5 @@ public class Main {
 //        panel.add(field);
 //
 //        frame.setVisible(true);
-    }
+//    }
 }

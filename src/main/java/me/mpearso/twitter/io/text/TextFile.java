@@ -1,21 +1,21 @@
-package me.mpearso.twitter.data.text;
+package me.mpearso.twitter.io.text;
 
-import me.mpearso.twitter.data.DataFile;
+import me.mpearso.twitter.io.FileWrapper;
 
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TextFile extends DataFile {
+public class TextFile extends FileWrapper {
 
     protected LinkedList<String> lines;
 
-    public TextFile(String path, String fileName) {
-        super(path, fileName, Extension.TXT);
+    public TextFile(String path) {
+        super(path);
     }
 
     @Override
-    protected void init() {
+    protected void load() {
         if(lines == null)
             lines = new LinkedList<>();
 

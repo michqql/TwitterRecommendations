@@ -1,4 +1,4 @@
-package me.mpearso.twitter.data.text;
+package me.mpearso.twitter.io.text;
 
 import java.util.HashMap;
 
@@ -7,8 +7,8 @@ public class KeyValueTextFile extends TextFile {
     private final String splitterRegex;
     protected final HashMap<String, String> values;
 
-    public KeyValueTextFile(String path, String fileName, String splitter) {
-        super(path, fileName);
+    public KeyValueTextFile(String path, String splitter) {
+        super(path);
 
         this.splitterRegex = splitter;
         this.values = new HashMap<>();

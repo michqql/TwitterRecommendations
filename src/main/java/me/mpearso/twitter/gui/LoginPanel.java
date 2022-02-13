@@ -1,6 +1,6 @@
 package me.mpearso.twitter.gui;
 
-import me.mpearso.twitter.account.LoginHandler;
+import me.mpearso.twitter.login.LoginHandler;
 
 import javax.swing.*;
 
