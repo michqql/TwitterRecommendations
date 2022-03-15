@@ -1,5 +1,7 @@
 package me.mpearso.twitter.io.text;
 
+import me.mpearso.twitter.io.impl.TextFile;
+
 import java.util.HashMap;
 
 public class KeyValueTextFile extends TextFile {
@@ -25,7 +27,7 @@ public class KeyValueTextFile extends TextFile {
     }
 
     public void put(String key, String value) {
-        this.addLine(key + splitterRegex + value);
+        //this.addLine(key + splitterRegex + value);
         this.values.put(key, value);
     }
 

@@ -1,5 +1,7 @@
 package me.mpearso.twitter.io.text;
 
+import me.mpearso.twitter.io.impl.TextFile;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
