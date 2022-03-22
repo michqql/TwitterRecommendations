@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import me.mpearso.twitter.io.impl.JsonFile;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
+import twitter4j.User;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 
@@ -165,6 +166,19 @@ public class LoginHandler {
             e.printStackTrace();
             System.exit(1);
             return false;
+        }
+    }
+
+    public User getUser() {
+        if(accessToken == null)
+            return null;
+
+        try {
+            long uuid = accessToken.getUserId();
+            return twitter.showUser(uuid);
+        } catch (TwitterException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

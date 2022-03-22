@@ -1,5 +1,7 @@
 package me.mpearso.twitter;
 
+import me.mpearso.twitter.interest.AccountGenerator;
+import me.mpearso.twitter.interest.InterestHandler;
 import me.mpearso.twitter.login.LoginHandler;
 import me.mpearso.twitter.component.Tweet;
 import twitter4j.*;
@@ -8,6 +10,7 @@ import twitter4j.auth.RequestToken;
 import twitter4j.conf.ConfigurationBuilder;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -36,7 +39,8 @@ public class TwitterRecommendations {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
                 .setOAuthConsumerKey(API_KEY)
-                .setOAuthConsumerSecret(API_SECRET);
+                .setOAuthConsumerSecret(API_SECRET)
+                .setTweetModeExtended(true);
 
         TwitterFactory tf = new TwitterFactory(cb.build());
         Twitter twitter = tf.getInstance();
@@ -57,6 +61,45 @@ public class TwitterRecommendations {
 
             loginHandler.setPin(pin);
         }
+
+        this.selfUser = loginHandler.getUser();
+
+        // Testing AccountGenerator getUsersByFollowing function
+        AccountGenerator accountGenerator = new AccountGenerator(twitter, selfUser);
+        accountGenerator.getUsersAsync(
+                AccountGenerator.SearchMethod.FOLLOWING_CONNECTIONS,
+                new AccountGenerator.Response() {
+                    @Override
+                    public void response(List<User> result) {
+                        System.out.println("Response!");
+                        result.forEach(user -> System.out.println(user.getScreenName()));
+                        System.out.println(result.size());
+                    }
+
+                    @Override
+                    public void lastResponse(List<User> finalState) {
+                        System.out.println("Final response");
+                    }
+                }
+        );
+        System.out.println("Finished");
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+//        while(true) {
+//            try {
+//                wait(1000L);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+//        InterestHandler interestHandler = new InterestHandler(twitter, selfUser);
+//        interestHandler.generateInterestsFromUser(selfUser);
     }
 
     private void loginAdvanced() {

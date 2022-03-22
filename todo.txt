@@ -1,0 +1,3 @@
+2.9: Store user information in a user.json file (instead of tokens.json)
+     In this file, store information about the user's language
+     This will allow the keyword extraction algorithm to ignore other languages
