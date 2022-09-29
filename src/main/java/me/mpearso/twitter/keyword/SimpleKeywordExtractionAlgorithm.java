@@ -5,7 +5,10 @@ import me.mpearso.twitter.io.impl.text.SeparatedValueTextFile;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class SimpleKeywordExtractionAlgorithm extends AbstractKeywordExtractionAlgorithm {
+public class SimpleKeywordExtractionAlgorithm {
+
+    // Line breaks and tabs
+    private final static Pattern LINE_BREAKS = Pattern.compile("[\\n\\t]");
 
     // Removes all characters that aren't a-z, A-Z or a whitespace
     private final static Pattern CHARACTERS = Pattern.compile("[^a-zA-Z ]");
@@ -36,7 +39,9 @@ public class SimpleKeywordExtractionAlgorithm extends AbstractKeywordExtractionA
         // Split the text into an array. Each element contains a single term
         // All non-alphabetic characters are removed
         // All terms are converted to lowercase
-        String[] words = text.replaceAll(CHARACTERS.pattern(), "").toLowerCase().split(SPLITTER.pattern());
+        String[] words = text.replaceAll(LINE_BREAKS.pattern(), " ")
+                .replaceAll(CHARACTERS.pattern(), "")
+                .toLowerCase().split(SPLITTER.pattern());
 
         // Loop through the words in the text
         for(int i = 0; i < words.length; i++) {
@@ -108,5 +113,10 @@ public class SimpleKeywordExtractionAlgorithm extends AbstractKeywordExtractionA
                 .forEach(entry -> terms.put(entry.getKey(), (float) entry.getValue() / this.termCounter)); // Collect this to a map
 
         return terms;
+    }
+
+    public void clearTerms() {
+        this.termCounter = 0;
+        this.termCountMap.clear();
     }
 }

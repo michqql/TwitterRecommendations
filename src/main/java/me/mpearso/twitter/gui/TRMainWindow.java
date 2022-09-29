@@ -1,48 +1,88 @@
 package me.mpearso.twitter.gui;
 
+import me.mpearso.twitter.gui.panels.LoginPanel;
 import me.mpearso.twitter.gui.panels.MenuBarPanel;
+import me.mpearso.twitter.gui.panels.RecommendationsPanel;
+import me.mpearso.twitter.interest.InterestHandler;
+import me.mpearso.twitter.login.LoginHandler;
+import twitter4j.Twitter;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class TRMainWindow {
 
-    public static final Color DARK_BACKGROUND_COLOUR = new Color(0x23272A);
-    public static final Color DARK_CONTENT_BACKGROUND_COLOUR = new Color(44, 47, 51);
-    public static final Color DARK_TEXT_COLOUR       = Color.WHITE;
+    public enum ContentPanel {
+        LOGIN, RECOMMENDATIONS, SETTINGS
+    }
 
-    // The java swing window
-    private final JFrame frame;
+    public static final Color BACKGROUND_COLOUR = new Color(0x23272A);
+    public static final Color CONTENT_BACKGROUND_COLOUR = new Color(44, 47, 51);
+    public static final Color TEXT_COLOUR = Color.WHITE;
+    public static final Color ERROR_TEXT_COLOUR = Color.RED;
 
-    public TRMainWindow() throws HeadlessException {
-        this.frame = new JFrame(); // Creates a new GUI frame
+    public static final int WIDTH = 1280, HEIGHT = 720;
+
+    // The java window
+    private final JFrame window;
+
+    // Variables
+    private final Twitter api;
+    private LoginHandler loginHandler;
+    private InterestHandler interestHandler;
+
+    // Panels
+    private final MenuBarPanel menuBarPanel;
+    private final LoginPanel loginPanel;
+    private final RecommendationsPanel recommendationsPanel;
+
+    public TRMainWindow(Twitter api, LoginHandler loginHandler) throws HeadlessException {
+        this.api = api;
+        this.loginHandler = loginHandler;
+        this.window = new JFrame(); // Creates a new GUI frame
 
         // Exits the program when the 'X' button is pressed on the window
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        frame.setSize(1280, 720); // Sets the width and height of frame
-        frame.setTitle("Twitter Recommendations"); // Sets title of frame
-        frame.setResizable(false); // Prevents frame from being resized
-        frame.setLayout(new BorderLayout(10, 10));
-        frame.setLocationRelativeTo(null);
+        window.setSize(WIDTH, HEIGHT); // Sets the width and height of frame
+        window.setTitle("Twitter Recommendations"); // Sets title of frame
+        window.setResizable(false); // Prevents frame from being resized, as this will mess up component sizes
+        window.setLayout(new BorderLayout(10, 10));
+        window.setLocationRelativeTo(null);
+        window.getContentPane().setBackground(CONTENT_BACKGROUND_COLOUR);
 
-//        JPanel panel = new JPanel();
-//        panel.setBackground(Color.BLACK);
-//        panel.setBounds(640, 0, 624, 680);
-//        panel.setLayout(new BorderLayout());
-//        frame.add(panel);
-//
-//        JLabel label = new JLabel();
-//        label.setText("Hello");
-//        label.setForeground(DARK_TEXT_COLOUR);
-//        label.setBorder(BorderFactory.createLineBorder(new Color(0x7289DA), 5));
-//        label.setVerticalAlignment(JLabel.CENTER);
-//        label.setHorizontalAlignment(JLabel.CENTER);
-//        panel.add(label);
+        // Create panels
+        this.menuBarPanel = new MenuBarPanel(this);
+        this.recommendationsPanel = new RecommendationsPanel(this, api);
+        this.loginPanel = new LoginPanel(this, loginHandler);
 
-        //frame.getContentPane().setBackground(DARK_BACKGROUND_COLOUR);
+        // Set the current content panel + the menu bar
+        window.add(menuBarPanel, BorderLayout.NORTH);
+        if(loginHandler.isAuthenticated()) {
+            recommendationsPanel.setUser(loginHandler.getUser());
+            setContentPanel(ContentPanel.RECOMMENDATIONS);
+        } else {
+            setContentPanel(ContentPanel.LOGIN);
+        }
 
-        frame.add(new MenuBarPanel(), BorderLayout.NORTH);
-        frame.setVisible(true); // Makes the frame visible
+        window.setVisible(true); // Makes the frame visible
+    }
+
+    public void setContentPanel(ContentPanel type) {
+        loginPanel.setVisible(false);
+        recommendationsPanel.setVisible(false);
+
+        switch (type) {
+            case LOGIN:
+                window.add(loginPanel, BorderLayout.CENTER);
+                loginPanel.setVisible(true);
+                break;
+
+            case RECOMMENDATIONS:
+                recommendationsPanel.setUser(loginHandler.getUser());
+                window.add(recommendationsPanel, BorderLayout.CENTER);
+                recommendationsPanel.setVisible(true);
+                break;
+        }
     }
 }

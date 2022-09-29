@@ -128,45 +128,34 @@ public class LoginHandler {
      * @param pin authentication pin
      * @return {@code true} if authentication was successful
      */
-    public final boolean setPin(String pin) {
-        try {
-            // Attempts to get the token for current session
-            if(pin == null || pin.isEmpty())
-                accessToken = twitter.getOAuthAccessToken(requestToken);
-            else
-                accessToken = twitter.getOAuthAccessToken(requestToken, pin);
+    public final boolean setPin(String pin) throws TwitterException {
+        // Attempts to get the token for current session
+        if(pin == null || pin.isEmpty())
+            accessToken = twitter.getOAuthAccessToken(requestToken);
+        else
+            accessToken = twitter.getOAuthAccessToken(requestToken, pin);
 
-            // At this point, if no exception has been thrown
-            // we can assume that authentication has been successful
-            // and therefore can save the tokens to our file
-            JsonElement element = accessTokenFile.getElement();
-            JsonObject object;
-            if(element.isJsonObject()) {
-                object = element.getAsJsonObject();
-            } else {
-                object = new JsonObject();
-                accessTokenFile.setElement(object);
-            }
-
-            // Set the appropriate data and save
-            object.addProperty("name", accessToken.getScreenName());
-            object.addProperty("uuid", accessToken.getUserId());
-            object.addProperty(ACCESS_TOKEN_KEY, accessToken.getToken());
-            object.addProperty(ACCESS_SECRET_KEY, accessToken.getTokenSecret());
-            accessTokenFile.save();
-
-            onAuthentication();
-            return true;
-        } catch (TwitterException e) {
-
-            /* TODO: Don't exit here, we want to handle this exception
-            *   and let the user know that the pin they entered was incorrect */
-            // An authentication exception has been thrown in the process
-            // This is a fatal error, quit the program.
-            e.printStackTrace();
-            System.exit(1);
-            return false;
+        // At this point, if no exception has been thrown
+        // we can assume that authentication has been successful
+        // and therefore can save the tokens to our file
+        JsonElement element = accessTokenFile.getElement();
+        JsonObject object;
+        if(element.isJsonObject()) {
+            object = element.getAsJsonObject();
+        } else {
+            object = new JsonObject();
+            accessTokenFile.setElement(object);
         }
+
+        // Set the appropriate data and save
+        object.addProperty("name", accessToken.getScreenName());
+        object.addProperty("uuid", accessToken.getUserId());
+        object.addProperty(ACCESS_TOKEN_KEY, accessToken.getToken());
+        object.addProperty(ACCESS_SECRET_KEY, accessToken.getTokenSecret());
+        accessTokenFile.save();
+
+        onAuthentication();
+        return true;
     }
 
     public User getUser() {
