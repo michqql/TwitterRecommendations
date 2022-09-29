@@ -1,2 +1,0 @@
-access_token:1058101469684076544-jglOOVaOhVkq1dSsPEgannfom5Seyu
-access_secret:Df072m6zOCPWjJrdbQvCCkdYx9NvDmWo4HDYfpGAXKNl4
